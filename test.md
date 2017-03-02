@@ -11,7 +11,10 @@ Usually, applications would start with features like "Friend", "Unfriend", "Bloc
 
 Develop an API server that does simple "Friend Management" based on the User Stories below.
 
-Please write sufficient documentation for us to run an instance of your API server and test run the APIs.
+You are required to:
+
+- Deploy an instance of the API server on the public cloud for us to test run the APIs
+- Write sufficient documentation for us to run an instance of your API server locally
 
 #### User Stories
 
@@ -185,7 +188,7 @@ Please timebox yourself to a maximum of 4 hours for this activity.
 
 #### Technology
 
-You are required to use any of these languages: [Go](https://golang.org/), [Ruby](https://www.ruby-lang.org/en/), JavaScript or Java.
+You are required to use any of these languages: [Go](https://golang.org/), [Ruby](https://www.ruby-lang.org/en/), JavaScript, Java, PHP or Python.
 
 You are allowed to use any frameworks for the language you chose.
 
