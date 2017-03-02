@@ -13,8 +13,8 @@ Develop an API server that does simple "Friend Management" based on the User Sto
 
 You are required to:
 
-- Deploy an instance of the API server on the public cloud for us to test run the APIs
-- Write sufficient documentation for us to run an instance of your API server locally
+- Deploy an instance of the API server on the public cloud or provide a 1-step command to run your API server locally, e.g. using a Makefile or Docker Compose) for us to test run the APIs
+- Write sufficient documentation for the APIs and explain your technical choices
 
 #### User Stories
 
