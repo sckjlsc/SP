@@ -96,7 +96,7 @@ The API should return the following JSON response on success:
 
 Please propose JSON responses for any errors that might occur.
 
-**4. As a user, I need an API to subscribe to updates for an email address.**
+**4. As a user, I need an API to subscribe to updates from an email address.**
 
 Please note that "subscribing to updates" is NOT equivalent to "adding a friend connection".
 
@@ -119,7 +119,7 @@ The API should return the following JSON response on success:
 
 Please propose JSON responses for any errors that might occur.
 
-**5. As a user, I need an API to block updates for an email address.**
+**5. As a user, I need an API to block updates from an email address.**
 
 Suppose "andy@example.com" blocks "john@example.com":
 
@@ -145,14 +145,14 @@ The API should return the following JSON response on success:
 
 Please propose JSON responses for any errors that might occur.
 
-**6. As a user, I need an API to retrieve all email addresses that can receive updates for an email address.**
+**6. As a user, I need an API to retrieve all email addresses that can receive updates from an email address.**
 
-Eligibility for receiving updates for i.e. "john@example.com":
-
-- has a friend connection with "john@example.com"
-- has subscribed to updates from "john@example.com"
-- has not blocked updates from "john@example.com"
-- has been @mentioned in the update
+Eligibility for receiving updates from i.e. "john@example.com":
+- has not blocked updates from "john@example.com", and
+- at least one of the following:
+  - has a friend connection with "john@example.com"
+  - has subscribed to updates from "john@example.com"
+  - has been @mentioned in the update
 
 The API should receive the following JSON request:
 
