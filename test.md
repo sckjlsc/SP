@@ -184,7 +184,7 @@ Please propose JSON responses for any errors that might occur.
 
 7 days from XXXX. Please feel free to submit your work any time, before the deadline.
 
-Please timebox yourself to a maximum of 4 hours for this activity.
+Please timebox yourself to a maximum of 12 hours for this activity.
 
 #### Technology
 
