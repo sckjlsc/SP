@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import urlparse, json
+import urlparse, json, re
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 """
@@ -14,6 +14,10 @@ curl -X GET http://localhost -d "{\"email\":\"john@example.com\"}"
 curl -X GET http://localhost -d "{\"friends\":[\"andy@example.com\",\"john@example.com\"]}"
 4) Subscribe
 curl -X POST http://localhost -d "{\"requestor\":\"lisa@example.com\", \"target\":\"john@example.com\"}"
+5) Block
+curl -X DELETE http://localhost -d "{\"requestor\":\"lisa@example.com\", \"target\":\"john@example.com\"}"
+6) Get list of emails can receive update
+curl -X GET http://localhost -d "{\"sender\":\"john@example.com\", \"text\":\"Hello World! kate@example.com\"}"
 """
 
 class Record:
@@ -21,15 +25,26 @@ class Record:
         self.email = email
         self.friends = set()
         self.subscribers = set()
+        self.blocks = set()
 
     def add_Friend(self, email):
-        self.friends.add(email)
+        if email not in self.blocks:
+            self.friends.add(email)
 
     def get_Friends(self):
         return self.friends
 
-    def add_Subscriber(self, email)
+    def add_Subscriber(self, email):
         self.subscribers.add(email)
+
+    def add_Block(self, email):
+        self.blocks.add(email)
+
+    def get_Blocks(self):
+        return self.blocks
+
+    def get_Subscribers(self):
+        return self.subscribers
 
 class RecordManager:
     def __init__(self):
@@ -38,15 +53,15 @@ class RecordManager:
     def get_Record(self, email):
         return self.records[email]
 
-    def add_Record(self, email):
+    def get_or_add(self, email):
         if email not in self.records:
             self.records[email] = Record(email)
         return self.records[email]
 
     def add_Friends(self, email1, email2):
-        r1 = self.add_Record(email1)
+        r1 = self.get_or_add(email1)
         r1.add_Friend(email2)
-        r2 = self.add_Record(email2)
+        r2 = self.get_or_add(email2)
         r2.add_Friend(email1)
 
     def get_Common(self, email1, email2):
@@ -104,8 +119,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             return send_reply(reply)
         if "target" not in request:
             return send_reply(reply)
-        # r = self.record_manager.get_Record(request["requestor"])
-        t = self.record_manager.get_Record(request["target"])
+        # r = self.record_manager.add_Record(request["requestor"])
+        t = self.record_manager.get_or_add(request["target"])
         t.add_Subscriber(request["requestor"])
         reply["success"] = True
         self.send_reply(reply)
@@ -133,21 +148,52 @@ class RequestHandler(BaseHTTPRequestHandler):
             reply["count"] = len(f)
             return self.send_reply(reply)
 
-        if "friends" not in request:
+        if "friends" in request:
+            friend_pair = request["friends"]
+            if len(friend_pair)!=2:
+                return self.send_reply(reply)
+
+            reply["success"] = True
+            com = self.record_manager.get_Common(friend_pair[0], friend_pair[1])
+            reply["friends"] = list(com)
+            reply["count"] = len(com)
             return self.send_reply(reply)
 
-        friend_pair = request["friends"]
-        if len(friend_pair)!=2:
+        if "sender" not in request:
+            return self.send_reply(reply)
+        if "text" not in request:
             return self.send_reply(reply)
 
+        sender = self.record_manager.get_Record(request["sender"])
+        if sender is None:
+            return self.send_reply(reply)
+ 
+        regex = re.compile(r'^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.com')
+        mentioned = filter(regex.match, request["text"].split())
+        listener = (set(mentioned) | sender.get_Subscribers() | sender.get_Friends()) - sender.get_Blocks()
         reply["success"] = True
-        com = self.record_manager.get_Common(friend_pair[0], friend_pair[1])
-        reply["friends"] = list(com)
-        reply["count"] = len(com)
-        self.send_reply(reply)
+        reply["recipients"] = list(listener)
+        return self.send_reply(reply)
 
     def do_DELETE(self):
-        self.send_reply("DEL")
+        reply = {}
+        reply["success"] = False
+        content_length = self.headers.getheaders('content-length')
+        length = int(content_length[0]) if content_length else 0
+        if length==0:
+            return send_reply(reply)
+        content = self.rfile.read(length)
+        request = json.loads(content)
+
+        if "requestor" not in request:
+            return send_reply(reply)
+        if "target" not in request:
+            return send_reply(reply)
+        # r = self.record_manager.add_Record(request["requestor"])
+        t = self.record_manager.get_or_add(request["target"])
+        t.add_Block(request["requestor"])
+        reply["success"] = True
+        self.send_reply(reply)
         
 def main():
     port = 80
