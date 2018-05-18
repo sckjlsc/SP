@@ -1,6 +1,44 @@
 
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
+class Record:
+    def __init__(self, email):
+        self.email = email
+        self.friends = set()
+
+    def add_Friend(self, email):
+        self.friends.add(email)
+
+    def get_Friends(self):
+        return self.friends
+
+class RecordManager:
+    def __init__(self):
+        self.records = {}
+
+    def get_Record(self, email):
+        return self.records[email]
+
+    def add_Record(self, email):
+        if email not in self.records:
+            self.records[email] = Record(email)
+        return self.records[email]
+
+    def add_Friends(self, email1, email2):
+        r1 = self.add_Record(email1)
+        r1.add_Friend(email2)
+        r2 = self.add_Record(email2)
+        r2.add_Friend(email1)
+
+    def get_Common(self, email1, email2):
+        r1 = self.get_Record(email1)
+        if r1 is None:
+            return set()
+        r2 = self.get_Record(email2)
+        if r2 is None:
+            return set()
+        return r1.get_Friends() & r2.get_Friends()
+        
 class RequestHandler(BaseHTTPRequestHandler):
     record_manager = RecordManager()
 
