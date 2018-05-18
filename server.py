@@ -1,23 +1,23 @@
 #!/usr/bin/env python
 
-import urlparse, json, re
+import urlparse, json, re, argparse
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 """
 1) Add friend pair
-curl -X PUT http://localhost -d "{\"friends\":[\"andy@example.com\",\"john@example.com\"]}"
-curl -X PUT http://localhost -d "{\"friends\":[\"common@example.com\",\"john@example.com\"]}"
-curl -X PUT http://localhost -d "{\"friends\":[\"andy@example.com\",\"common@example.com\"]}"
+curl -X PUT http://localhost:80 -d "{\"friends\":[\"andy@example.com\",\"john@example.com\"]}"
+curl -X PUT http://localhost:80 -d "{\"friends\":[\"common@example.com\",\"john@example.com\"]}"
+curl -X PUT http://localhost:80 -d "{\"friends\":[\"andy@example.com\",\"common@example.com\"]}"
 2) Get friend list
-curl -X GET http://localhost -d "{\"email\":\"john@example.com\"}"
+curl -X GET http://localhost:80 -d "{\"email\":\"john@example.com\"}"
 3) Retrieve the common friends
-curl -X GET http://localhost -d "{\"friends\":[\"andy@example.com\",\"john@example.com\"]}"
+curl -X GET http://localhost:80 -d "{\"friends\":[\"andy@example.com\",\"john@example.com\"]}"
 4) Subscribe
-curl -X POST http://localhost -d "{\"requestor\":\"lisa@example.com\", \"target\":\"john@example.com\"}"
+curl -X POST http://localhost:80 -d "{\"requestor\":\"lisa@example.com\", \"target\":\"john@example.com\"}"
 5) Block
-curl -X DELETE http://localhost -d "{\"requestor\":\"lisa@example.com\", \"target\":\"john@example.com\"}"
+curl -X DELETE http://localhost:80 -d "{\"requestor\":\"lisa@example.com\", \"target\":\"john@example.com\"}"
 6) Get list of emails can receive update
-curl -X GET http://localhost -d "{\"sender\":\"john@example.com\", \"text\":\"Hello World! kate@example.com\"}"
+curl -X GET http://localhost:80 -d "{\"sender\":\"john@example.com\", \"text\":\"Hello World! kate@example.com\"}"
 """
 
 class Record:
@@ -195,12 +195,12 @@ class RequestHandler(BaseHTTPRequestHandler):
         reply["success"] = True
         self.send_reply(reply)
         
-def main():
-    port = 80
+def main(port):
     print('Listening on localhost:%s' % port)
     server = HTTPServer(('', port), RequestHandler)
     server.serve_forever()
 
-        
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('port', type=int, nargs='?',default=80)
+    main(parser.parse_args().port)
