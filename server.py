@@ -6,9 +6,12 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 """
 1) Add friend pair
 curl -X PUT http://localhost -d "{\"friends\":[\"andy@example.com\",\"john@example.com\"]}"
+curl -X PUT http://localhost -d "{\"friends\":[\"common@example.com\",\"john@example.com\"]}"
+curl -X PUT http://localhost -d "{\"friends\":[\"andy@example.com\",\"common@example.com\"]}"
 2) Get friend list
 curl -X GET http://localhost -d "{\"email\":\"john@example.com\"}"
-
+3) Retrieve the common friends
+curl -X GET http://localhost -d "{\"friends\":[\"andy@example.com\",\"john@example.com\"]}"
 """
 class Record:
     def __init__(self, email):
@@ -104,6 +107,19 @@ class RequestHandler(BaseHTTPRequestHandler):
             f = r.get_Friends()
             reply["friends"] = list(f)
             reply["count"] = len(f)
+            return self.send_reply(reply)
+
+        if "friends" not in request:
+            return self.send_reply(reply)
+
+        friend_pair = request["friends"]
+        if len(friend_pair)!=2:
+            return self.send_reply(reply)
+
+        reply["success"] = True
+        com = self.record_manager.get_Common(friend_pair[0], friend_pair[1])
+        reply["friends"] = list(com)
+        reply["count"] = len(com)
         self.send_reply(reply)
 
     def do_DELETE(self):
