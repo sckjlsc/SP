@@ -1,9 +1,12 @@
+#!/usr/bin/env python
 
+import urlparse, json
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 """
 1) Add friend pair
 curl -X PUT http://localhost -d "{\"friends\":[\"andy@example.com\",\"john@example.com\"]}"
+
 """
 class Record:
     def __init__(self, email):
@@ -50,7 +53,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        self.wfile.write(reply_msg)
+        self.wfile.write(json.dumps(reply_msg, ensure_ascii=False))
         self.wfile.write("\n")
 
     def do_PUT(self):
