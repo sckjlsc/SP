@@ -6,6 +6,8 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 """
 1) Add friend pair
 curl -X PUT http://localhost -d "{\"friends\":[\"andy@example.com\",\"john@example.com\"]}"
+2) Get friend list
+curl -X GET http://localhost -d "{\"email\":\"john@example.com\"}"
 
 """
 class Record:
@@ -82,7 +84,27 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_reply("POST")
 
     def do_GET(self):
-        self.send_reply("PUT")
+        reply = {}
+        reply["success"] = False
+        parsed_path = urlparse.urlparse(self.path)
+        content = parsed_path.query
+        if len(content)==0:
+            content_length = self.headers.getheaders('content-length')
+            length = int(content_length[0]) if content_length else 0
+            content = self.rfile.read(length)
+        if len(content)==0:
+            return self.send_reply(reply)
+
+        request = json.loads(content)
+        if "email" in request:        
+            r = self.record_manager.get_Record(request["email"])
+            if r is None:
+                return self.send_reply(reply)
+            reply["success"] = True
+            f = r.get_Friends()
+            reply["friends"] = list(f)
+            reply["count"] = len(f)
+        self.send_reply(reply)
 
     def do_DELETE(self):
         self.send_reply("DEL")
