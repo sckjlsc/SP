@@ -12,17 +12,24 @@ curl -X PUT http://localhost -d "{\"friends\":[\"andy@example.com\",\"common@exa
 curl -X GET http://localhost -d "{\"email\":\"john@example.com\"}"
 3) Retrieve the common friends
 curl -X GET http://localhost -d "{\"friends\":[\"andy@example.com\",\"john@example.com\"]}"
+4) Subscribe
+curl -X POST http://localhost -d "{\"requestor\":\"lisa@example.com\", \"target\":\"john@example.com\"}"
 """
+
 class Record:
     def __init__(self, email):
         self.email = email
         self.friends = set()
+        self.subscribers = set()
 
     def add_Friend(self, email):
         self.friends.add(email)
 
     def get_Friends(self):
         return self.friends
+
+    def add_Subscriber(self, email)
+        self.subscribers.add(email)
 
 class RecordManager:
     def __init__(self):
@@ -84,7 +91,24 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_reply(reply)
 
     def do_POST(self):
-        self.send_reply("POST")
+        reply = {}
+        reply["success"] = False
+        content_length = self.headers.getheaders('content-length')
+        length = int(content_length[0]) if content_length else 0
+        if length==0:
+            return send_reply(reply)
+        content = self.rfile.read(length)
+        request = json.loads(content)
+
+        if "requestor" not in request:
+            return send_reply(reply)
+        if "target" not in request:
+            return send_reply(reply)
+        # r = self.record_manager.get_Record(request["requestor"])
+        t = self.record_manager.get_Record(request["target"])
+        t.add_Subscriber(request["requestor"])
+        reply["success"] = True
+        self.send_reply(reply)
 
     def do_GET(self):
         reply = {}
