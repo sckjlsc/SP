@@ -1,6 +1,10 @@
 
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
+"""
+1) Add friend pair
+curl -X PUT http://localhost -d "{\"friends\":[\"andy@example.com\",\"john@example.com\"]}"
+"""
 class Record:
     def __init__(self, email):
         self.email = email
@@ -38,7 +42,7 @@ class RecordManager:
         if r2 is None:
             return set()
         return r1.get_Friends() & r2.get_Friends()
-        
+
 class RequestHandler(BaseHTTPRequestHandler):
     record_manager = RecordManager()
 
@@ -50,7 +54,26 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write("\n")
 
     def do_PUT(self):
-        self.send_reply("PUT")
+        reply = {}
+        reply["success"] = False
+        content_length = self.headers.getheaders('content-length')
+        length = int(content_length[0]) if content_length else 0
+        if length==0:
+            return send_reply(reply)
+
+        content = self.rfile.read(length)
+        request = json.loads(content)
+        
+        if "friends" not in request:
+            return send_reply(reply)
+
+        friend_pair = request["friends"]
+        if len(friend_pair)!=2:
+            return send_reply(reply)
+
+        self.record_manager.add_Friends(friend_pair[0], friend_pair[1])
+        reply["success"] = True
+        self.send_reply(reply)
 
     def do_POST(self):
         self.send_reply("POST")
